@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.core.widget.addTextChangedListener
+
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.movieapp.data.GameDatabase
@@ -20,6 +22,9 @@ class GameListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var showFavorites = false
+
+    private var allGames: List<GameEntity> = emptyList()
+    private var filteredGames: List<GameEntity> = emptyList()
 
 
     private val fakeGames = listOf(
@@ -109,18 +114,24 @@ class GameListFragment : Fragment() {
 
         updateTabs()
 
+        binding.editSearch.addTextChangedListener {
+            updateList(it.toString())
+        }
+
         return binding.root
     }
 
     private suspend fun loadGames(dao: com.example.movieapp.data.GameDao) {
-        val games = if (showFavorites) {
+        allGames = if (showFavorites) {
             dao.getFavoriteGames()
         } else {
             dao.getAllGames()
         }
 
+        filteredGames = allGames
+
         binding.recyclerViewGames.adapter =
-            GameAdapter(games) { game ->
+            GameAdapter(filteredGames) { game ->
                 val bundle = Bundle().apply {
                     putInt("gameId", game.id)
                 }
@@ -135,6 +146,25 @@ class GameListFragment : Fragment() {
 
         binding.textAllGames.setTextColor(if (!showFavorites) activeColor else inactiveColor)
         binding.textFavorites.setTextColor(if (showFavorites) activeColor else inactiveColor)
+    }
+
+    private fun updateList(query: String) {
+        filteredGames = if (query.isBlank()) {
+            allGames
+        } else {
+            allGames.filter {
+                it.name.contains(query, ignoreCase = true)
+            }
+        }
+
+        binding.recyclerViewGames.adapter =
+            GameAdapter(filteredGames) { game ->
+                val bundle = Bundle().apply {
+                    putInt("gameId", game.id)
+                }
+                findNavController()
+                    .navigate(R.id.gameDetailsFragment, bundle)
+            }
     }
 
     override fun onDestroyView() {
