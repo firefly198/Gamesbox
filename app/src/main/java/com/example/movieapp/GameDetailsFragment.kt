@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 class GameDetailsFragment : Fragment() {
 
     private var _binding: FragmentGameDetailsBinding? = null
+    private var currentRating = 0
     private val binding get() = _binding!!
 
     private var gameId: Int = -1
@@ -35,6 +36,9 @@ class GameDetailsFragment : Fragment() {
 
             val game = dao.getGameById(gameId)
             isFavorite = game.isFavorite
+
+            currentRating = game.rating
+            updateStars(currentRating)
 
             binding.textTitle.text = game.name
             binding.textDescription.text = game.fullDescription
@@ -58,6 +62,29 @@ class GameDetailsFragment : Fragment() {
                     updateButton()
                 }
             }
+            val stars = listOf(
+                binding.star1,
+                binding.star2,
+                binding.star3,
+                binding.star4,
+                binding.star5
+            )
+
+            stars.forEachIndexed { index, imageView ->
+                imageView.setOnClickListener {
+                    val selectedRating = index + 1
+
+                    currentRating =
+                        if (currentRating == selectedRating) 0 else selectedRating
+
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        dao.updateRating(gameId, currentRating)
+                    }
+
+                    updateStars(currentRating)
+                }
+            }
+
         }
 
         return binding.root
@@ -66,6 +93,24 @@ class GameDetailsFragment : Fragment() {
     private fun updateButton() {
         binding.btnFavorite.text =
             if (isFavorite) "Remove from Favorites" else "Add to Favorites"
+    }
+
+    private fun updateStars(rating: Int) {
+        val stars = listOf(
+            binding.star1,
+            binding.star2,
+            binding.star3,
+            binding.star4,
+            binding.star5
+        )
+
+        stars.forEachIndexed { index, imageView ->
+            if (index < rating) {
+                imageView.setImageResource(R.drawable.star_rate_filled)
+            } else {
+                imageView.setImageResource(R.drawable.star_rate_empty)
+            }
+        }
     }
 
     override fun onDestroyView() {
