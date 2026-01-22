@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/gameListFragment">
+
+    <fragment
+        android:id="@+id/gameListFragment"
+        android:name="com.example.movieapp.GameListFragment"
+        android:label="Games">
+        <action
+            android:id="@+id/action_to_details"
+            app:destination="@id/gameDetailsFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/gameDetailsFragment"
+        android:name="com.example.movieapp.GameDetailsFragment"
+        android:label="Details" />
+
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.example.movieapp.FavoritesFragment"
+        android:label="Favorites" />
+</navigation>
+
+
